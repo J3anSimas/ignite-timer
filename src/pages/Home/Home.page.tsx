@@ -18,7 +18,11 @@ export default function Home(): JSX.Element {
     console.log(data)
   }
 
-  const task = watch('task')
+  const task: string = watch('task')
+  const minutesAmount = watch('minutesAmount')
+  console.log(minutesAmount)
+  const isSubmitDisabled: boolean = task === '' || isNaN(minutesAmount)
+  console.log(isSubmitDisabled)
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
@@ -61,7 +65,7 @@ export default function Home(): JSX.Element {
           <span>0</span>
           <span>0</span>
         </CountdownContainer>
-        <StartCountdownButton type="submit">
+        <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
           <Play size={24} />
           Começar
         </StartCountdownButton>
