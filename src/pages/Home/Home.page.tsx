@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { Play } from 'phosphor-react'
+import { HandPalm, Play } from 'phosphor-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
 import { differenceInSeconds } from 'date-fns'
@@ -9,7 +9,7 @@ import {
   HomeContainer,
   MinuteAmountInput,
   Separator,
-  StartCountdownButton,
+  CountdownButton,
   TaskInput
 } from './Home.styles'
 import { useEffect, useState } from 'react'
@@ -19,6 +19,8 @@ type TCycle = {
   task: string
   minutesAmount: number
   startDate: Date
+  interruptedDate?: Date
+  finishedDate?: Date
 }
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -42,16 +44,46 @@ export default function Home(): JSX.Element {
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
+  const totalSeconds = activeCycle != null ? activeCycle.minutesAmount * 60 : 0
+  const currentSeconds =
+    activeCycle != null ? totalSeconds - amountSecondsPast : 0
+
+  const minutesLeft = String(Math.floor(currentSeconds / 60)).padStart(2, '0')
+  const secondsLeft = String(currentSeconds % 60).padStart(2, '0')
+
+  useEffect(() => {
+    let interval: number
+    if (activeCycle != null) {
+      interval = setInterval(() => {
+        if (
+          differenceInSeconds(new Date(), activeCycle.startDate) >= totalSeconds
+        ) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycle.id) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            })
+          )
+          setActiveCycleId(null)
+        } else {
+          setAmountSecondsPast(
+            differenceInSeconds(new Date(), activeCycle.startDate)
+          )
+        }
+      }, 1000)
+    }
+
+    return () => clearInterval(interval)
+  }, [activeCycle, totalSeconds])
+
   useEffect(() => {
     if (activeCycle != null) {
-      const interval = setInterval(() => {
-        setAmountSecondsPast(
-          differenceInSeconds(new Date(), activeCycle.startDate)
-        )
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [activeCycle])
+      document.title = `${minutesLeft}:${secondsLeft} | ${activeCycle.task}`
+    } else document.title = `Ignite Timer`
+  }, [minutesLeft, secondsLeft, activeCycle])
   function handleCreateNewCycle(data: TNewCycleFormData): void {
     const newCycle: TCycle = {
       id: new Date().getTime().toString(),
@@ -61,15 +93,23 @@ export default function Home(): JSX.Element {
     }
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(newCycle.id)
+    setAmountSecondsPast(0)
     reset()
   }
 
-  const totalSeconds = activeCycle != null ? activeCycle.minutesAmount * 60 : 0
-  const currentSeconds =
-    activeCycle != null ? totalSeconds - amountSecondsPast : 0
+  function handleStopCycle(): void {
+    setCycles(
+      cycles.map((cycle) => {
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, interruptedDate: new Date() }
+        } else {
+          return cycle
+        }
+      })
+    )
 
-  const minutesLeft = String(Math.floor(currentSeconds / 60)).padStart(2, '0')
-  const secondsLeft = String(currentSeconds % 60).padStart(2, '0')
+    setActiveCycleId(null)
+  }
 
   const task: string = watch('task')
   const minutesAmount = watch('minutesAmount')
@@ -85,6 +125,7 @@ export default function Home(): JSX.Element {
             placeholder="Dê um nome para seu projeto"
             id="task"
             list="task-suggestions"
+            disabled={!(activeCycle == null)}
             {...register('task')}
           />
           <datalist id="task-suggestions">
@@ -103,6 +144,7 @@ export default function Home(): JSX.Element {
             step={5}
             min={5}
             max={60}
+            disabled={!(activeCycle == null)}
             {...register('minutesAmount', {
               valueAsNumber: true
             })}
@@ -117,10 +159,25 @@ export default function Home(): JSX.Element {
           <span>{secondsLeft[0]}</span>
           <span>{secondsLeft[1]}</span>
         </CountdownContainer>
-        <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
-          <Play size={24} />
-          Começar
-        </StartCountdownButton>
+        {activeCycle === undefined ? (
+          <CountdownButton
+            type="submit"
+            disabled={isSubmitDisabled}
+            action="play"
+          >
+            <Play size={24} />
+            Começar
+          </CountdownButton>
+        ) : (
+          <CountdownButton
+            action="stop"
+            type="button"
+            onClick={handleStopCycle}
+          >
+            <HandPalm size={24} />
+            Interromper
+          </CountdownButton>
+        )}
       </form>
     </HomeContainer>
   )
