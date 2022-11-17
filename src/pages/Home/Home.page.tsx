@@ -3,16 +3,10 @@ import { HandPalm, Play } from 'phosphor-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
 import { differenceInSeconds } from 'date-fns'
-import {
-  CountdownContainer,
-  FormContainer,
-  HomeContainer,
-  MinuteAmountInput,
-  Separator,
-  CountdownButton,
-  TaskInput
-} from './Home.styles'
+import { HomeContainer, CountdownButton } from './Home.styles'
 import { useEffect, useState } from 'react'
+// import Countdown from './components/Countdown/Countdown.component'
+import NewCycleForm from './components/NewCycleForm/NewCycleForm.component'
 
 type TCycle = {
   id: string
@@ -118,7 +112,9 @@ export default function Home(): JSX.Element {
     <HomeContainer>
       {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
-        <FormContainer>
+        <NewCycleForm />
+        {/* <Countdown /> */}
+        {/* <FormContainer>
           <label htmlFor="task">Vou trabalhar em</label>
           <TaskInput
             type="text"
@@ -151,14 +147,14 @@ export default function Home(): JSX.Element {
           />
 
           <span>minutes.</span>
-        </FormContainer>
-        <CountdownContainer>
+        </FormContainer> */}
+        {/* <CountdownContainer>
           <span>{minutesLeft[0]}</span>
           <span>{minutesLeft[1]}</span>
           <Separator>:</Separator>
           <span>{secondsLeft[0]}</span>
           <span>{secondsLeft[1]}</span>
-        </CountdownContainer>
+        </CountdownContainer> */}
         {activeCycle === undefined ? (
           <CountdownButton
             type="submit"
