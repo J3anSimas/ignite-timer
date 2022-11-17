@@ -45,6 +45,9 @@ const BaseInput = styled.input`
   &::placeholder {
     color: ${(props) => props.theme.gray500};
   }
+  &:disabled {
+    cursor: not-allowed;
+  }
 `
 
 export const TaskInput = styled(BaseInput)`
@@ -83,7 +86,11 @@ export const Separator = styled.div`
   display: flex;
   justify-content: center;
 `
-export const StartCountdownButton = styled.button`
+
+type TCountdownButton = {
+  action: 'play' | 'stop'
+}
+export const CountdownButton = styled.button<TCountdownButton>`
   width: 100%;
   border: 0;
   padding: 1rem;
@@ -96,7 +103,9 @@ export const StartCountdownButton = styled.button`
   gap: 0.5rem;
   font-weight: bold;
   cursor: pointer;
-  background: ${(props) => props.theme.green500};
+  background: ${(props) => {
+    return props.action === 'play' ? props.theme.green500 : props.theme.red500
+  }};
   color: ${(props) => props.theme.gray100};
 
   &:disabled {
@@ -105,6 +114,14 @@ export const StartCountdownButton = styled.button`
   }
 
   &:not(:disabled):hover {
-    background: ${(props) => props.theme.green700};
+    background: ${(props) => {
+      return props.action === 'play' ? props.theme.green700 : props.theme.red700
+    }};
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px
+      ${(props) =>
+        props.action === 'stop' ? props.theme.red500 : props.theme.green500};
   }
 `
