@@ -22,7 +22,12 @@ export const HistoryList = styled.div`
     width: 100%;
     border-collapse: collapse;
     min-width: 600px;
+    max-height: 1rem;
+    overflow: auto;
 
+    tbody {
+      overflow: auto;
+    }
     th {
       background-color: ${(props) => props.theme.gray600};
       padding: 1rem;
