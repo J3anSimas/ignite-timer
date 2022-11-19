@@ -1,14 +1,22 @@
 import { differenceInSeconds } from 'date-fns'
-import { Children, createContext, ReactNode, useState } from 'react'
-
-type TCycle = {
-  id: string
-  task: string
-  minutesAmount: number
-  startDate: Date
-  interruptedDate?: Date
-  finishedDate?: Date
-}
+import {
+  Children,
+  createContext,
+  ReactNode,
+  useEffect,
+  useReducer,
+  useState
+} from 'react'
+import {
+  createNewCycleAction,
+  finishCycleAction,
+  interruptCurrentCycleAction
+} from '../reducers/cycles/cycles.actions'
+import {
+  cyclesReducer,
+  TCycle,
+  TCyclesState
+} from '../reducers/cycles/cycles.reducer'
 
 type TCyclesContext = {
   cycles: TCycle[]
@@ -35,24 +43,33 @@ export const CyclesContext = createContext<TCyclesContext>({} as TCyclesContext)
 export default function CyclesContextProvider({
   children
 }: TCyclesContextProps): JSX.Element {
-  const [cycles, setCycles] = useState<TCycle[]>([])
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [cyclesState, dispatch] = useReducer(
+    cyclesReducer,
+    {
+      cycles: [],
+      activeCycleId: null
+    },
+    () => {
+      const storedStateAsJSON = localStorage.getItem(
+        '@ignite-timer-cycles-state-1.0.0'
+      )
+      if (storedStateAsJSON != null) {
+        return JSON.parse(storedStateAsJSON)
+      }
+    }
+  )
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
+  useEffect(() => {
+    const stateJSON = JSON.stringify(cyclesState)
+    localStorage.setItem('@ignite-timer-cycles-state-1.0.0', stateJSON)
+  }, [cyclesState])
+  const { cycles, activeCycleId } = cyclesState
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   // Helper functions to pass through CyclesContext
   function finishCycle(): void {
-    setCycles((state) =>
-      state.map((cycle) => {
-        if (cycle.id === activeCycle?.id) {
-          return { ...cycle, finishedDate: new Date() }
-        } else {
-          return cycle
-        }
-      })
-    )
-    setActiveCycleId(null)
+    dispatch(finishCycleAction())
   }
 
   function updateSecondsPassed(): void {
@@ -61,9 +78,7 @@ export default function CyclesContextProvider({
       differenceInSeconds(new Date(), activeCycle.startDate)
     )
   }
-  /// ///////////////////////////////////////////////////
 
-  // Functions to handle User Actions
   function createNewCycle(data: TCreateCycleData): void {
     const newCycle: TCycle = {
       id: new Date().getTime().toString(),
@@ -71,23 +86,12 @@ export default function CyclesContextProvider({
       minutesAmount: data.minutesAmount,
       startDate: new Date()
     }
-    setCycles((state) => [newCycle, ...state])
-    setActiveCycleId(newCycle.id)
+    dispatch(createNewCycleAction(newCycle))
     setAmountSecondsPassed(0)
-    // reset()
   }
 
   function stopCycle(): void {
-    setCycles(
-      cycles.map((cycle) => {
-        if (cycle.id === activeCycle?.id) {
-          return { ...cycle, interruptedDate: new Date() }
-        } else {
-          return cycle
-        }
-      })
-    )
-    setActiveCycleId(null)
+    dispatch(interruptCurrentCycleAction())
   }
   /// ///////////////////////////////////////////////////
   return (
