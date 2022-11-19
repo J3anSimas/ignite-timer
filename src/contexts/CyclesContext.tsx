@@ -71,7 +71,7 @@ export default function CyclesContextProvider({
       minutesAmount: data.minutesAmount,
       startDate: new Date()
     }
-    setCycles((state) => [...state, newCycle])
+    setCycles((state) => [newCycle, ...state])
     setActiveCycleId(newCycle.id)
     setAmountSecondsPassed(0)
     // reset()
