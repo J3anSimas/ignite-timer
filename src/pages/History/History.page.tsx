@@ -1,11 +1,10 @@
 import { useContext } from 'react'
 import { CyclesContext } from '../../contexts/CyclesContext'
 import { HistoryContainer, HistoryList, Status } from './History.styles'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 export default function History(): JSX.Element {
   const { cycles } = useContext(CyclesContext)
-
   function formatTimeDistance(date: Date): string {
     return formatDistanceToNow(date, {
       locale: ptBR,
@@ -27,14 +26,6 @@ export default function History(): JSX.Element {
             </tr>
           </thead>
           <tbody>
-            {/* <tr>
-              <td>Tarefa</td>
-              <td>20 minutos</td>
-              <td>Há 2 meses</td>
-              <td>
-                <Status statusColor="red">Concluído</Status>
-              </td>
-            </tr> */}
             {cycles.map((cycle) => (
               <tr key={cycle.id}>
                 <td>{cycle.task}</td>
