@@ -5,7 +5,7 @@ import * as zod from 'zod'
 import { HomeContainer, CountdownButton } from './Home.styles'
 import Countdown from './components/Countdown/Countdown.component'
 import NewCycleForm from './components/NewCycleForm/NewCycleForm.component'
-import { CyclesContext } from '../../contexts/CyclesContext'
+import { CyclesContext } from '../../contexts/cycles.context'
 import { useContext } from 'react'
 
 const newCycleFormValidationSchema = zod.object({

@@ -1,6 +1,5 @@
 import { differenceInSeconds } from 'date-fns'
 import {
-  Children,
   createContext,
   ReactNode,
   useEffect,
@@ -53,8 +52,27 @@ export default function CyclesContextProvider({
       const storedStateAsJSON = localStorage.getItem(
         '@ignite-timer-cycles-state-1.0.0'
       )
+
       if (storedStateAsJSON != null) {
-        return JSON.parse(storedStateAsJSON)
+        const parsedData = JSON.parse(storedStateAsJSON) as TCyclesState
+        return {
+          ...parsedData,
+          cycles: parsedData.cycles.map((cycle) => {
+            const newCycle = cycle
+            newCycle.startDate = new Date(newCycle.startDate)
+            if (cycle.finishedDate !== undefined)
+              newCycle.finishedDate = new Date(cycle.finishedDate.toString())
+            if (cycle.interruptedDate !== undefined)
+              newCycle.interruptedDate = new Date(
+                cycle.interruptedDate.toString()
+              )
+            return newCycle
+          })
+        }
+      }
+      return {
+        cycles: [],
+        activeCycleId: null
       }
     }
   )
